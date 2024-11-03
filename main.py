@@ -178,6 +178,7 @@ def main():
         command, *args = user_input.split()
 
         if command in ["close", "exit"]:
+            book.save_to_file()  #Збереження перед виходом із програми
             print("Good bye!")
             break
         elif command == "hello":
