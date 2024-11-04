@@ -2,6 +2,7 @@ from collections import UserDict
 import re
 from datetime import datetime, timedelta
 import pickle
+import os 
 
 class Field:
     def __init__(self, value):
@@ -9,6 +10,42 @@ class Field:
 
     def __str__(self):
         return str(self.value)
+
+class Notes:
+    """Створення нотаток"""
+    def __init__(self, filename='personalnotes.txt'):
+        self.filename = filename
+
+    def add_note(self, note):
+        """Додати нотатку"""
+        with open(self.filename, 'a', encoding='utf-8') as file:
+            file.write(note + '\n')
+        print("Нотатку додано!")
+
+    def search_notes(self, keyword):
+        """Пошук нотаток"""
+        if not os.path.exists(self.filename):
+            print("Файл з нотатками не знайдено.")
+            return
+
+        with open(self.filename, 'r', encoding='utf-8') as file:
+            notes = file.readlines()
+
+        found_notes = [note.strip() for note in notes if keyword.lower() in note.lower()]
+
+        if found_notes:
+            print("Знайдені нотатки:")
+            for note in found_notes:
+                print(f"- {note}")
+        else:
+            print("Нотатки не знайдено.")
+    
+    def all_notes(self):
+        """Показати всі нотатки"""
+        with open(self.filename, 'r', encoding='utf-8') as file:
+            notes = file.readlines()
+            for index, note in enumerate(notes):
+                print(f"{index+1}) {note}")
 
 class Name(Field):
     pass  # Додаткової логіки не потрібно, просто успадковуємо Field
@@ -41,6 +78,8 @@ class Record:
         self.birthday = None
 
     def add_phone(self, phone_number):
+        if not self.validate_phone(phone_number):
+            raise ValueError("Invalid phone number")
         phone = Phone(phone_number)
         self.phones.append(phone)
 
@@ -56,6 +95,11 @@ class Record:
             if phone.value == phone_number:
                 return phone
         return None
+    
+    @staticmethod
+    def validate_phone(value):
+        numbers_cleaned = re.sub(r"\D+", "", value)
+        return bool(re.fullmatch(r"^\+?(38)?", "+38", numbers_cleaned))
 
     def __str__(self):
         return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
@@ -171,6 +215,7 @@ def show_all_contacts(book):
 
 #Головна функція
 def main():
+    notes = Notes()
     book = AddressBook.load_from_file()  #Завантажуємо адресну книгу
     print("Welcome to the assistant bot!")
     while True:
@@ -200,6 +245,14 @@ def main():
             print(show_birthday(args, book))
         elif command == "birthdays":
             print(birthdays(args, book))
+        elif command == 'AddNote':
+            note = input("Введіть текст нотатки: ")
+            notes.add_note(note)
+        elif command == 'FindNote':
+            keyword = input("Введіть ключове слово для пошуку: ")
+            notes.search_notes(keyword)
+        elif command == 'AllNotes':
+            notes.all_notes()
         else:
             print("Invalid command.")
 
