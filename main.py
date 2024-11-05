@@ -95,11 +95,6 @@ class Record:
             if phone.value == phone_number:
                 return phone
         return None
-    
-    @staticmethod
-    def validate_phone(value):
-        numbers_cleaned = re.sub(r"\D+", "", value)
-        return bool(re.fullmatch(r"^\+?(38)?", "+38", numbers_cleaned))
 
     def __str__(self):
         return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
